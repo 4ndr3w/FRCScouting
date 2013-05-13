@@ -1,8 +1,9 @@
-var app = require('http').createServer(reqHandler)
-  , io = require('socket.io').listen(app)
+var app = require("express")()
+  , server = require('http').createServer(app)
+  , io = require('socket.io').listen(server)
   , fs = require('fs');
 
-  app.listen(8080);
+  server.listen(8080);
   
   function reqHandler(req,res)
   {
@@ -149,9 +150,55 @@ io.sockets.on('connection', function (socket) {
 	
 	socket.on("commitScoutingData", function(data)
 	{
+		fs.mkdir("teamData/"+data.team);	
+		fs.writeFile("teamData/"+data.team+"/"+data.match, JSON.stringify(data), function(err) {});		
 		console.log(data);
-		assignScouterToMatchAndTeam(socket);
+		assignScouterToMatchAndTeam(socket);11
 	});
 });
+
+
+app.get("/", function (req,res)
+{
+	fs.readFile("frontend/scout.html", function(err,data) {
+		res.set('Content-Type', 'text/html');
+		res.send(200, data);
+	});
+});
+
+app.get("/api/teamMatches", function(req,res)
+{
+	teamID = req.param("id");
+	fs.readdir("teamData/"+teamID, function(err, files)
+	{
+		if ( err )
+			res.json(null);
+		else
+		{
+			data = new Array();
+			for ( var i = 0; i < files.length; i++ )
+			{
+				try{
+					data.push(JSON.parse(fs.readFileSync("teamData/"+teamID+"/"+files[i]).toString()));
+				} catch (e) {}
+			}
+			res.json(data);
+		}
+	});	
+});
+
+
+app.get("/api/matchInfo", function(req,res)
+{
+	teamID = req.param("id");
+	fs.readdir("teamData/"+teamID, function(err, files)
+	{
+		if ( err )
+			res.json(null);
+		else
+			res.json(files);
+	});	
+});
+
 
 
