@@ -1,9 +1,9 @@
 var app = require("express")()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server)
-  , fs = require('fs');
+  , fs = require('fs')
+  , http = require('http');
 
-  server.listen(8080);
   
   function reqHandler(req,res)
   {
@@ -17,12 +17,14 @@ var app = require("express")()
 var scouterPool = new Array();
 
 var matchList = new Array();
-
+var RED = 1;
+var BLUE = 2;
 function emptyTeamDataObject()
 {
 	return {
 		team: 0,
 		match: 0,
+		color: 0,
 		auto: [0,0,0],
 		tele: [0,0,0],
 		climb: 0,
@@ -55,6 +57,9 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 	
 	for ( var i = 0; i < 3; i++ )
 	{
+		this.red[i].matchData.color = RED;
+		this.blue[i].matchData.color = BLUE;
+		
 		this.red[i].matchData.match = number;
 		this.blue[i].matchData.match = number;
 	}
@@ -102,7 +107,7 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 			}
 		}
 	}
-	
+	 
 	this.isComplete = function()
 	{
 		var complete = true;
@@ -119,6 +124,19 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 		return this.numScouters < 6;
 	}
 	
+	this.getTeamInMatch = function(teamnum)
+	{
+		for ( var i = 0; i < 3; i++ )
+		{
+			if ( this.red[i].matchData.team == teamnum )
+				return this.red[i];
+				
+			if ( this.blue[i].matchData.team == teamnum )
+				return this.blue[i];
+		}
+		return null;
+	}
+	
 	return this;
 }
 
@@ -130,10 +148,19 @@ function getNextOpenMatch()
 			return matchList[i];
 	}
 	return undefined;
-	console.log("here");
 }
 
 matchList.push(new Match(22, 103, 225, 987, 111, 222, 321));
+
+function getMatch(num)
+{
+	for ( var i = 0; i < matchList.length; i++ )
+	{
+		if ( matchList[i].number == num )
+			return matchList[i];
+	}
+	return null;
+}
 
 function assignScouterToMatchAndTeam(socket)
 {
@@ -152,8 +179,7 @@ io.sockets.on('connection', function (socket) {
 	{
 		fs.mkdir("teamData/"+data.team);	
 		fs.writeFile("teamData/"+data.team+"/"+data.match, JSON.stringify(data), function(err) {});		
-		console.log(data);
-		assignScouterToMatchAndTeam(socket);11
+		assignScouterToMatchAndTeam(socket);
 	});
 });
 
@@ -199,6 +225,47 @@ app.get("/api/matchInfo", function(req,res)
 			res.json(files);
 	});	
 });
+
+
+fs.readFile("matchList.csv", function(err, data)
+{
+	lines = data.toString().split("\n");
+	for ( var i = 0; i < lines.length; i++ )
+	{
+		data = lines[i].split(",");
+		if ( data.length > 1 )
+		{
+			console.log("Loaded match "+data[1]);
+			matchList.push(new Match(data[1], data[2], data[3], data[4], data[5], data[6], data[7]));
+		}
+	}
+	console.log("Done!");
+
+	fs.readdir("teamData", function(err, teams)
+	{
+		for ( i = 0; i < teams.length; i++)
+		{
+			matches = fs.readdirSync("teamData/"+teams[i]);
+			for ( var b = 0; b < matches.length; b++ )
+			{
+				var thisMatch = getMatch(matches[b]);
+				
+				if ( thisMatch != null  )
+				{
+					var team = thisMatch.getTeamInMatch(teams[i]);
+					if ( team != null )
+					{
+						team.matchData.blank = false;
+						console.log("Loaded pre-scouted team "+teams[i]+" in match "+matches[b]);
+					}
+				}
+			}
+		}
+	});
+	
+	server.listen(8080);
+});
+
 
 
 

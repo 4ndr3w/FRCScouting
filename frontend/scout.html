@@ -179,20 +179,18 @@
 					document.getElementById("finishButton").onClick = "";
 					document.getElementById("finishButton").innerHTML = "...";
 					document.getElementById("finishButton").setAttribute("onClick", "");
-					
+
 					document.getElementById("backButton").disabled="disabled";
-					
 					document.getElementById("shooterScouting").style.display="none";
 					document.getElementById("postScouting").style.display="none";
 					break;
 				case AUTON:
 					document.getElementById("currentTeam").innerHTML = currentTeamData.team;
+					document.getElementById("currentTeam").style.color = (currentTeamData.color==1?"red":"blue");
 					document.getElementById("currentMatch").innerHTML = "Match "+currentTeamData.match+" Auton";
 					document.getElementById("finishButton").setAttribute("onClick", "javascript:commitAutonomous()");
 					document.getElementById("finishButton").innerHTML = "Begin Teleop";
-					
 					document.getElementById("backButton").disabled="disabled";
-					
 					document.getElementById("shooterScouting").style.display="block";
 					document.getElementById("postScouting").style.display="none";
 					break;
