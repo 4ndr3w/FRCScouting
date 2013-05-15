@@ -38,6 +38,12 @@
 			height: 50px;
 		}
 		
+		#backButton
+		{
+			width: 100%;
+			height: 50px;
+		}
+		
 		.pointDescription
 		{
 			text-align: center;
@@ -174,6 +180,8 @@
 					document.getElementById("finishButton").innerHTML = "...";
 					document.getElementById("finishButton").setAttribute("onClick", "");
 					
+					document.getElementById("backButton").disabled="disabled";
+					
 					document.getElementById("shooterScouting").style.display="none";
 					document.getElementById("postScouting").style.display="none";
 					break;
@@ -183,6 +191,8 @@
 					document.getElementById("finishButton").setAttribute("onClick", "javascript:commitAutonomous()");
 					document.getElementById("finishButton").innerHTML = "Begin Teleop";
 					
+					document.getElementById("backButton").disabled="disabled";
+					
 					document.getElementById("shooterScouting").style.display="block";
 					document.getElementById("postScouting").style.display="none";
 					break;
@@ -191,12 +201,43 @@
 					document.getElementById("currentMatch").innerHTML = "Match "+currentTeamData.match+" Teleop";
 					document.getElementById("finishButton").setAttribute("onClick", "javascript:commitTeleop()");
 					document.getElementById("finishButton").innerHTML = "Finish Match";
+					document.getElementById("postScouting").style.display="none";
+					document.getElementById("shooterScouting").style.display="block";
+					document.getElementById("backButton").disabled="";
 					break;
 				case POSTMATCH:
 					document.getElementById("shooterScouting").style.display="none";
 					document.getElementById("postScouting").style.display="block";
 					document.getElementById("finishButton").innerHTML = "Commit";
 					document.getElementById("finishButton").setAttribute("onClick", "javascript:commitAll()");
+					
+					document.getElementById("backButton").disabled="";
+					break;
+			}
+		}
+		
+		function backStep()
+		{
+			switch ( matchState )
+			{
+				case TELEOP:
+					if ( confirm("Going back to autonomous will erace teleop data") )
+					{
+						for ( var i = 0; i < 3; i++ )
+						{
+							obj = document.getElementById((i+1)+"point");
+							obj.value = currentTeamData.auto[i];
+						}
+						updateMatchState(AUTON);
+					}
+					break;
+				case POSTMATCH:
+					for ( var i = 0; i < 3; i++ )
+					{
+						obj = document.getElementById((i+1)+"point");
+						obj.value = currentTeamData.tele[i];
+					}
+					updateMatchState(TELEOP);
 					break;
 			}
 		}
@@ -256,6 +297,8 @@
 	</div>
 	<br>
 	<button id="finishButton" onClick="updateMatchState()">Switch</button>
+	<br><br>
+	<button id="backButton" onClick="backStep()">Back</button>
 	
 	</body>
 </html>
