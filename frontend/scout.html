@@ -90,6 +90,7 @@
 				auto: [0,0,0],
 				tele: [0,0,0],
 				climb: 0,
+				color: 0,
 				comments: "",
 				blank:false
 			};
@@ -99,7 +100,7 @@
 		var currentTeamData = emptyTeamDataObject();
 		
 		
-		function initTeam(team, match)
+		function initTeam(team, match, color)
 		{
 			if ( matchState > WAITING_FOR_ASSIGNMENT && currentTeamData.team == team && currentTeamData.match == match )
 				return;
@@ -108,6 +109,7 @@
 			currentTeamData = emptyTeamDataObject();
 			currentTeamData.team = team;
 			currentTeamData.match = match;
+			currentTeamData.color = color;
 			document.getElementById("currentTeam").innerHTML = team;
 			document.getElementById("currentMatch").innerHTML = "Match "+match+" Autonomous";
 			matchState = AUTON;
@@ -243,7 +245,7 @@
 		
 		socket.on('assignScouting', function(data)
 		{
-			initTeam(data.team, data.match);
+			initTeam(data.team, data.match, data.color);
 		});
 		
 		function init()
