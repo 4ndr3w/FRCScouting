@@ -1,0 +1,64 @@
+<html>
+<head>
+	<title>FRC Scouting Data</title>
+	
+	<style type="text/css">
+	.red
+	{
+		color: red;
+	}
+	
+	.blue
+	{
+		color: blue;
+	}
+	</style>
+	
+	<script type="text/javascript" src="/static/jquery.min.js"></script>
+	<script type="text/javascript">
+	
+	function loadTeamData()
+	{
+		teamNum = $("#teamNumber").val();
+		$("#teamNumber").val("");
+		$.getJSON("/api/teamMatches?id="+teamNum, function (data)
+		{
+			if ( data == null)
+				alert("No data is available for this team.");
+				
+			output = "<tr><td><strong>Match #</strong></td><td><strong>Auton 3</strong></td><td><strong>Auton 2</strong></td><td><strong>Auton 1</strong></td><td><strong>Teleop 3</strong></td><td><strong>Teleop 2</strong></td><td><strong>Teleop 1</strong></td><td><strong>Climb</strong></td><td><strong>Comments</strong></td></tr>";
+			for ( var i = 0; i < data.length; i++ )
+			{
+				thisMatch = data[i];
+				output += "<tr>";
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.match+"</td>";
+				
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.auto[2]+"</td>";
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.auto[1]+"</td>";
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.auto[0]+"</td>";
+				
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.tele[2]+"</td>";
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.tele[1]+"</td>";
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.tele[0]+"</td>";
+				
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+(thisMatch.climb*10)+"</td>";
+				
+				output += "<td class=\""+(thisMatch.color==1?"red":"blue")+"\">"+thisMatch.comments+"</td>";
+				
+				output += "</tr>";
+			}
+			document.getElementById("infoTable").innerHTML = output;
+		});
+	}
+	
+	</script>
+</head>
+
+<body onLoad="loadTeamData()">
+	Team Number: <input type="text" id="teamNumber"><input type="submit" value="Query" onClick="loadTeamData()"><br><br>
+	<table id="infoTable" border="1">
+
+	</table>
+</body>
+
+</html>	

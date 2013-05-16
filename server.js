@@ -1,4 +1,5 @@
-var app = require("express")()
+var express = require("express")
+  , app = express()
   , server = require('http').createServer(app)
   , io = require('socket.io').listen(server)
   , fs = require('fs')
@@ -150,8 +151,6 @@ function getNextOpenMatch()
 	return undefined;
 }
 
-matchList.push(new Match(22, 103, 225, 987, 111, 222, 321));
-
 function getMatch(num)
 {
 	for ( var i = 0; i < matchList.length; i++ )
@@ -192,6 +191,16 @@ app.get("/", function (req,res)
 	});
 });
 
+app.get("/pit", function (req,res)
+{
+	fs.readFile("frontend/pit.html", function(err,data) {
+		res.set('Content-Type', 'text/html');
+		res.send(200, data);
+	});
+});
+
+app.use("/static", express.static("static"));
+
 app.get("/api/teamMatches", function(req,res)
 {
 	teamID = req.param("id");
@@ -206,6 +215,7 @@ app.get("/api/teamMatches", function(req,res)
 			{
 				try{
 					data.push(JSON.parse(fs.readFileSync("teamData/"+teamID+"/"+files[i]).toString()));
+					console.log("Sent data for team "+teamID); 
 				} catch (e) {}
 			}
 			res.json(data);
