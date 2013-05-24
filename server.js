@@ -69,6 +69,7 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 	
 	this.assignScouter = function(scouterSocket)
 	{
+		console.log("Called "+scouterSocket);
 		for ( var i = 0; i < 3; i++ )
 		{
 			if ( this.red[i].assignedScouter == undefined && this.red[i].matchData.blank )
@@ -76,23 +77,27 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 				this.red[i].assignedScouter = scouterSocket;
 				
 				scouterSocket.emit("assignScouting", this.red[i].matchData);
-				
 				var thisPtr = this;
 				this.red[i].assignedScouter.onDisconnect = function()
 				{
 					var tmpIndex = i;
 					thisPtr.red[tmpIndex].assignedScouter = undefined;
+					console.log("DISCONNECT");
 					thisPtr.numScouters--;
 				}
-				
+				console.log("assign");
 				this.numScouters++;
 				return;
+			}
+			else
+			{
+				console.log("DEBUG: r"+i+" "+this.red[i].assignedScouter+" "+this.red[i].matchData.blank+"");
 			}
 		}
 		
 		for ( var i = 0; i < 3; i++ )
 		{
-			if ( this.blue[i].assignedScouter == undefined && this.red[i].matchData.blank )
+			if ( this.blue[i].assignedScouter == undefined && this.blue[i].matchData.blank )
 			{
 				scouterSocket.emit("assignScouting", this.blue[i].matchData);
 				this.blue[i].assignedScouter = scouterSocket;
@@ -101,8 +106,10 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 				{
 					var tmpIndex = i;
 					thisPtr.blue[tmpIndex].assignedScouter = undefined;
+					console.log("DISCONNECT");
 					thisPtr.numScouters--;
 				}
+				console.log("assign");
 				this.numScouters++;
 				return;
 			}
@@ -146,7 +153,10 @@ function getNextOpenMatch()
 	for ( var i = 0; i < matchList.length; i++ )
 	{
 		if ( !matchList[i].isComplete() && matchList[i].needsScouters() )
+		{
+			console.log("Using match pos:"+i+" scouters: "+matchList[i].numScouters);
 			return matchList[i];
+		}
 	}
 	return undefined;
 }
@@ -163,6 +173,7 @@ function getMatch(num)
 
 function assignScouterToMatchAndTeam(socket)
 {
+	console.log("assigning...");
 	var match = undefined;
 	if ( (match = getNextOpenMatch()) != undefined )
 	{
@@ -177,7 +188,11 @@ io.sockets.on('connection', function (socket) {
 	socket.on("commitScoutingData", function(data)
 	{
 		fs.mkdir("teamData/"+data.team);	
-		fs.writeFile("teamData/"+data.team+"/"+data.match, JSON.stringify(data), function(err) {});		
+		fs.writeFile("teamData/"+data.team+"/"+data.match, JSON.stringify(data), function(err) { if ( err ) console.log("Error: "+err); });	
+		thisTeam = getMatch(data.match).getTeamInMatch(data.team);
+		thisTeam.matchData = data;
+		thisTeam.assignedScouter = undefined;
+		
 		assignScouterToMatchAndTeam(socket);
 	});
 });
@@ -200,6 +215,13 @@ app.get("/pit", function (req,res)
 });
 
 app.use("/static", express.static("static"));
+app.use("/frontend", express.static("frontend"));
+
+
+app.post("/handler/handlePitScoutData", function (req,res)
+{
+	res.send(200, req.params);
+});
 
 app.get("/api/teamMatches", function(req,res)
 {
@@ -211,11 +233,23 @@ app.get("/api/teamMatches", function(req,res)
 		else
 		{
 			data = new Array();
+				
+			files.sort(function(a,b)
+			{
+				aInt = parseInt(a);
+				bInt = parseInt(b);
+				
+				if ( aInt < bInt )
+					return -1;
+				if ( aInt > bInt)
+					return 1;
+				return 0;
+			});
+
 			for ( var i = 0; i < files.length; i++ )
 			{
 				try{
-					data.push(JSON.parse(fs.readFileSync("teamData/"+teamID+"/"+files[i]).toString()));
-					console.log("Sent data for team "+teamID); 
+					data.push(JSON.parse(fs.readFileSync("teamData/"+teamID+"/"+files[i]).toString())); 
 				} catch (e) {}
 			}
 			res.json(data);
