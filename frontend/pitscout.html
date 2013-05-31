@@ -14,6 +14,7 @@
 	}
 	</style>
 	<link href="/static/css/bootstrap.css" rel="stylesheet">
+	<link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
 </head>
 
 	<body>
@@ -21,10 +22,12 @@
 		<div class="container">
 			<div class="navbar">
 				<div class="navbar-inner">
-					<a class="brand" href="index.html">WebScout</a>
+					<a class="brand" href="/frontend">WebScout</a>
 					<ul class="nav">
 						<li><a href="/">Match Scouting</a></li>
 						<li class="active"><a href="#">Pit Scouting</a></li>
+						<li><a href="/frontend/predict.html">Predict Match</a></li>
+						<li><a href="/frontend/everybody.html">All Teams</a></li>
 					</ul>
 					
 					<form class="navbar-search pull-right" action="query.html" method="get">
@@ -39,12 +42,12 @@
 				</div>
 				
 				<div class="span8">
-					<form action="/handler/handlePitScoutData" method="post">
 						<table class="table table-bordered">
+							<form action="/handler/commitPitScouting" method="get">
 							<tr>
 								<td><strong>Team #</strong></td>
 								<td>
-									<input type="text" name="teamNum">
+									<input type="text" name="team">
 								</td>
 							</tr>
 						
@@ -65,7 +68,7 @@
 								<td><strong>Wheel Set 1</strong></td>
 								<td>
 									<select name="wheel1">
-										<option disabled="disabled" selected="selected">N/A</option>
+										<option selected="selected">N/A</option>
 										<option>Kit (Hi-Grip)</option>
 										<option>Traction</option>
 										<option>Omni/caster</option>
@@ -78,7 +81,7 @@
 								<td><strong>Wheel Set 2</strong></td>
 								<td>
 									<select name="wheel2">
-										<option disabled="disabled" selected="selected">N/A</option>
+										<option selected="selected">N/A</option>
 										<option>Kit (Hi-Grip)</option>
 										<option>Traction</option>
 										<option>Omni/caster</option>
@@ -92,7 +95,7 @@
 								<td><strong>Wheel Set 3</strong></td>
 								<td>
 									<select name="wheel3">
-										<option disabled="disabled" selected="selected">N/A</option>
+										<option selected="selected">N/A</option>
 										<option>Kit (Hi-Grip)</option>
 										<option>Traction</option>
 										<option>Omni/caster</option>
@@ -105,7 +108,7 @@
 								<td><strong>Wheel Set 4</strong></td>
 								<td>
 									<select name="wheel4">
-										<option disabled="disabled" selected="selected">N/A</option>
+										<option selected="selected">N/A</option>
 										<option>Kit (Hi-Grip)</option>
 										<option>Traction</option>
 										<option>Omni/caster</option>
@@ -113,7 +116,7 @@
 									</select>
 								</td>
 							</tr>
-			
+
 							<tr>
 								<td><strong># of Motors</strong></td>
 								<td>
@@ -139,8 +142,9 @@
 								<td>
 									<input type="submit" class="btn">
 								</td>
+								<input type="hidden" name="redirect" value="/frontend/pitscout.html">
+						</form>
 						</table>
-					</form>
 				</div>
 				
 				<div class="span2">

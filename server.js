@@ -171,6 +171,12 @@ function getMatch(num)
 	return null;
 }
 
+function getMatchDataFromFS(match, team)
+{
+	data = fs.readFileSync("teamData/"+team+"/"+match);
+	return JSON.parse(data);
+}
+
 function assignScouterToMatchAndTeam(socket)
 {
 	console.log("assigning...");
@@ -257,7 +263,6 @@ app.get("/api/teamMatches", function(req,res)
 	});	
 });
 
-
 app.get("/api/matchInfo", function(req,res)
 {
 	teamID = req.param("id");
@@ -270,6 +275,137 @@ app.get("/api/matchInfo", function(req,res)
 	});	
 });
 
+
+
+app.get("/handler/commitPitScouting", function(req,res)
+{
+	redirect = req.param("redirect");
+	status = fs.writeFileSync("pitTeamData/"+req.param("team"), JSON.stringify(req.query));
+	if ( redirect == undefined )
+		res.send(200, "done");
+	else
+		res.redirect(redirect);
+});
+
+
+function getPitScoutingData(team)
+{
+	return fs.readFileSync("pitTeamData/"+team);
+}
+
+app.get("/api/getPitScouting", function(req,res)
+{
+	data = getPitScoutingData(req.param("team"));
+	if ( data )
+		res.send(200, data.toString());
+	else
+		res.send(404, "Not found");
+});
+
+
+function getAverageContribution(teamID)
+{
+	contribution = 0;
+	numMatches = 0;
+	for ( var i = 0; i < matchList.length; i++ )
+	{
+		var teamInfo = matchList[i].getTeamInMatch(teamID);
+		if ( teamInfo != null && !teamInfo.matchData.blank )
+		{
+			teamInfo = getMatchDataFromFS(teamInfo.matchData.match,teamInfo.matchData.team);
+			for ( var level = 0; level < 3; level++ )
+			{
+				contribution += (teamInfo.auto[level]*(level+1))*2;
+				contribution += teamInfo.tele[level]*(level+1);
+			}
+			contribution += teamInfo.climb*10;
+			numMatches++;
+		}
+	}
+	if (numMatches != 0)
+		contribution /= numMatches;
+	return contribution;
+}
+
+
+function getAverageForData(teamID, handler)
+{
+	contribution = 0;
+	numMatches = 0;
+	for ( var i = 0; i < matchList.length; i++ )
+	{
+		var teamInfo = matchList[i].getTeamInMatch(teamID);
+		if ( teamInfo != null && !teamInfo.matchData.blank )
+		{
+			teamInfo = getMatchDataFromFS(teamInfo.matchData.match,teamInfo.matchData.team);
+			contribution += handler(teamInfo);
+			numMatches++;
+		}
+	}
+	if (numMatches != 0)
+		contribution /= numMatches;
+	return contribution;
+}
+
+function getAllAverageDataForTeam(teamID)
+{
+	console.log(teamID);
+	return {
+		team:teamID,
+		auto:[
+			getAverageForData(teamID, function(t) { return t.auto[0]; }),
+			getAverageForData(teamID, function(t) { return t.auto[1]; }),
+			getAverageForData(teamID, function(t) { return t.auto[2]; })
+		],
+		tele:[
+			getAverageForData(teamID, function(t) { return t.tele[0]; }),
+			getAverageForData(teamID, function(t) { return t.tele[1]; }),
+			getAverageForData(teamID, function(t) { return t.tele[2]; })
+		],
+		climb: getAverageForData(teamID, function(t) { return t.climb; })
+	};
+}
+
+app.get("/api/getAverageContribution", function(req,res)
+{
+	teamID = parseInt(req.param("team"));
+	
+	res.json({team:teamID, contrib:getAverageContribution(teamID)});
+});
+
+app.get("/api/teamOverviews", function(req,res)
+{
+	output = new Array();
+	fs.readdir("teamData", function(err, files)
+	{
+		for ( var i = 0; i < files.length; i++ )
+		{
+			teamID = files[i];
+			pitObj = undefined;
+			try
+			{
+				pitData = getPitScoutingData(teamID);
+				if ( pitData )
+				{
+					pitObj = JSON.parse(pitData);
+				}
+			} catch(e) {
+				
+			}
+			
+			output.push({team:teamID, contribution:getAverageContribution(teamID), averages:getAllAverageDataForTeam(teamID), pitData:pitObj});
+		}
+		res.json(output);
+	});	
+	
+});
+
+
+app.get("/api/averageData", function(req,res)
+{
+	teamID = req.param("id");
+	res.json(getAllAverageDataForTeam(teamID));
+});
 
 fs.readFile("matchList.csv", function(err, data)
 {
@@ -309,7 +445,5 @@ fs.readFile("matchList.csv", function(err, data)
 	
 	server.listen(8080);
 });
-
-
 
 

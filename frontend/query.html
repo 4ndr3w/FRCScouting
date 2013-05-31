@@ -9,6 +9,7 @@
 	}
 	</style>
 	<link href="/static/css/bootstrap.css" rel="stylesheet">
+	<link href="/static/css/bootstrap-responsive.css" rel="stylesheet">
 	<script type="text/javascript" src="/static/jquery.min.js"></script>
 	
 	<script type="text/javascript">
@@ -25,29 +26,71 @@
 		team = getUrlVars()['team'];
 		$.getJSON("/api/teamMatches?id="+team, function (data)
 		{
-			output = "<tr><td><strong>Match #</strong></td><td><strong>Auton 3</strong></td><td><strong>Auton 2</strong></td><td><strong>Auton 1</strong></td><td><strong>Teleop 3</strong></td><td><strong>Teleop 2</strong></td><td><strong>Teleop 1</strong></td><td><strong>Climb</strong></td><td><strong>Comments</strong></td></tr>";
+			var Moutput = "<tr><td><strong>Match #</strong></td><td><strong>Auton 3</strong></td><td><strong>Auton 2</strong></td><td><strong>Auton 1</strong></td><td><strong>Teleop 3</strong></td><td><strong>Teleop 2</strong></td><td><strong>Teleop 1</strong></td><td><strong>Climb</strong></td><td><strong>Comments</strong></td></tr>";
 			for ( var i = 0; i < data.length; i++ )
 			{
 				thisMatch = data[i];
-				output += "<tr>";
-				output += "<td>"+thisMatch.match+"</td>";
+				Moutput += "<tr>";
+				Moutput += "<td>"+thisMatch.match+"</td>";
 				
-				output += "<td>"+thisMatch.auto[2]+"</td>";
-				output += "<td>"+thisMatch.auto[1]+"</td>";
-				output += "<td>"+thisMatch.auto[0]+"</td>";
+				Moutput += "<td>"+thisMatch.auto[2]+"</td>";
+				Moutput += "<td>"+thisMatch.auto[1]+"</td>";
+				Moutput += "<td>"+thisMatch.auto[0]+"</td>";
 				
-				output += "<td>"+thisMatch.tele[2]+"</td>";
-				output += "<td>"+thisMatch.tele[1]+"</td>";
-				output += "<td>"+thisMatch.tele[0]+"</td>";
+				Moutput += "<td>"+thisMatch.tele[2]+"</td>";
+				Moutput += "<td>"+thisMatch.tele[1]+"</td>";
+				Moutput += "<td>"+thisMatch.tele[0]+"</td>";
 				
-				output += "<td>"+(thisMatch.climb*10)+"</td>";
+				Moutput += "<td>"+(thisMatch.climb*10)+"</td>";
 				
-				output += "<td>"+thisMatch.comments+"</td>";
+				Moutput += "<td>"+thisMatch.comments+"</td>";
 				
-				output += "</tr>";
+				Moutput += "</tr>";
 			}
-			document.getElementById("matchTable").innerHTML = output;
+			
+			$.getJSON("/api/averageData?id="+team, function (data)
+			{
+				Moutput += "<tr>";
+				Moutput += "<td>Average</td>";
+			
+				Moutput += "<td>"+data.auto[2]+"</td>";
+				Moutput += "<td>"+data.auto[1]+"</td>";
+				Moutput += "<td>"+data.auto[0]+"</td>";
+			
+				Moutput += "<td>"+data.tele[2]+"</td>";
+				Moutput += "<td>"+data.tele[1]+"</td>";
+				Moutput += "<td>"+data.tele[0]+"</td>";
+			
+				Moutput += "<td>"+(data.climb*10)+"</td>";
+			
+				Moutput += "<td></td>";
+			
+				Moutput += "</tr>";
+				document.getElementById("matchTable").innerHTML = Moutput;
+			});
+
 		});
+		
+		$.getJSON("/api/getPitScouting?team="+team, function(data)
+		{
+			if ( !data )
+				return;
+			var output = "";
+			output += "<tr><td><strong>Drivetrain Type</strong></td><td>"+data.drivetrainType+"</td></tr>";
+			output += "<tr><td><strong>Wheel Set 1</strong></td><td>"+data.wheel1+"</td></tr>";
+			output += "<tr><td><strong>Wheel Set 2</strong></td><td>"+data.wheel2+"</td></tr>";
+			output += "<tr><td><strong>Wheel Set 3</strong></td><td>"+data.wheel3+"</td></tr>";
+			output += "<tr><td><strong>Wheel Set 4</strong></td><td>"+data.wheel4+"</td></tr>";
+			output += "<tr><td><strong># of Motors</strong></td><td>"+data.motornum+"</td></tr>";
+			output += "<tr><td><strong>Comments</strong></td><td>"+data.comments+"</td></tr>";
+			document.getElementById("pitScouting").innerHTML = output;
+		});
+		
+		$.getJSON("/api/getAverageContribution?team="+team, function(data)
+		{
+			document.getElementById("avgContribution").innerHTML = data.contrib;
+		});
+		
 	}
 	</script>
 </head>
@@ -61,6 +104,8 @@
 					<ul class="nav">
 						<li><a href="/">Match Scouting</a></li>
 						<li><a href="pitscout.html">Pit Scouting</a></li>
+						<li><a href="/frontend/predict.html">Predict Match</a></li>
+						<li><a href="/frontend/everybody.html">All Teams</a></li>
 						<li class="active"><a href="#">Team Info</a></li>
 					</ul>
 					
@@ -102,41 +147,9 @@
 					</div>
 					
 					<div class="span4">
-						<table class="table table-bordered">
-							<tr>
-								<td><strong>Drivetrain Type</strong></td>
-								<td>Tank</td>
-							</tr>
-				
-							<tr>
-								<td><strong>Wheel Set 1</strong></td>
-								<td>Traction</td>
-							</tr>
-					
-							<tr>
-								<td><strong>Wheel Set 2</strong></td>
-								<td>Traction</td>
-							</tr>
-					
-							<tr>
-								<td><strong>Wheel Set 3</strong></td>
-								<td>Traction</td>
-							</tr>
-									
-							<tr>
-								<td><strong>Wheel Set 4</strong></td>
-								<td>N/A</td>
-							</tr>
-				
-							<tr>
-								<td><strong># of Motors</strong></td>
-								<td>6</td>
-							<tr>
-					
-							<tr>
-								<td><strong>Comments</strong></td>
-								<td>Good defence bot</td>
-							</tr>
+						<p>Average Contribution: <span id="avgContribution">Loading...</span>
+						<table id="pitScouting" class="table table-bordered">
+							
 						</table>
 					</div>
 					
