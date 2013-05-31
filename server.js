@@ -69,7 +69,6 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 	
 	this.assignScouter = function(scouterSocket)
 	{
-		console.log("Called "+scouterSocket);
 		for ( var i = 0; i < 3; i++ )
 		{
 			if ( this.red[i].assignedScouter == undefined && this.red[i].matchData.blank )
@@ -82,16 +81,10 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 				{
 					var tmpIndex = i;
 					thisPtr.red[tmpIndex].assignedScouter = undefined;
-					console.log("DISCONNECT");
 					thisPtr.numScouters--;
 				}
-				console.log("assign");
 				this.numScouters++;
 				return;
-			}
-			else
-			{
-				console.log("DEBUG: r"+i+" "+this.red[i].assignedScouter+" "+this.red[i].matchData.blank+"");
 			}
 		}
 		
@@ -106,10 +99,8 @@ function Match(number, r1,r2,r3,b1,b2,b3)
 				{
 					var tmpIndex = i;
 					thisPtr.blue[tmpIndex].assignedScouter = undefined;
-					console.log("DISCONNECT");
 					thisPtr.numScouters--;
 				}
-				console.log("assign");
 				this.numScouters++;
 				return;
 			}
@@ -154,7 +145,6 @@ function getNextOpenMatch()
 	{
 		if ( !matchList[i].isComplete() && matchList[i].needsScouters() )
 		{
-			console.log("Using match pos:"+i+" scouters: "+matchList[i].numScouters);
 			return matchList[i];
 		}
 	}
@@ -179,7 +169,6 @@ function getMatchDataFromFS(match, team)
 
 function assignScouterToMatchAndTeam(socket)
 {
-	console.log("assigning...");
 	var match = undefined;
 	if ( (match = getNextOpenMatch()) != undefined )
 	{
@@ -346,7 +335,6 @@ function getAverageForData(teamID, handler)
 
 function getAllAverageDataForTeam(teamID)
 {
-	console.log(teamID);
 	return {
 		team:teamID,
 		auto:[
