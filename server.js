@@ -206,10 +206,7 @@ io.sockets.on('connection', function (socket) {
 
 app.get("/", function (req,res)
 {
-	fs.readFile("frontend/scout.html", function(err,data) {
-		res.set('Content-Type', 'text/html');
-		res.send(200, data);
-	});
+	res.redirect("/frontend");
 });
 
 app.get("/pit", function (req,res)
