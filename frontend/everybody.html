@@ -9,11 +9,17 @@
 		$.getJSON("/api/teamOverviews", function(data)
 		{
 			output = "<tr><td><strong>Team#</strong></td><td><strong>Auton 3</strong></td><td><strong>Auton 2</strong></td><td><strong>Auton 1</strong></td><td><strong>Teleop 3</strong></td><td><strong>Teleop 2</strong></td><td><strong>Teleop 1</strong></td><td><strong>Climb</strong></td><td><strong>Avg. Contribution</strong></td><td><strong>Tags</strong></td></tr>";
+			
+			data.sort(function (a,b)
+			{
+				return a.team-b.team;
+			});
+			
 			for ( var i = 0; i < data.length; i++ )
 			{
 				thisTeam = data[i];
 				output += "<tr>";
-				output += "<td>"+thisTeam.team+"</td>";
+				output += "<td><a href=\"/frontend/query.html?team="+thisTeam.team+"\">"+thisTeam.team+"</a></td>";
 				output += "<td>"+thisTeam.averages.auto[2]+"</td>";
 				output += "<td>"+thisTeam.averages.auto[1]+"</td>";
 				output += "<td>"+thisTeam.averages.auto[0]+"</td>";
